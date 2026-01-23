@@ -40,16 +40,12 @@ clj-pack build --input ./target/app.jar --output ./dist/my-app
 
 ## How It Works
 
-```
-┌──────────────────────────────────────────────────────┐
-│  1. Detect build system (deps.edn or project.clj)    │
-│  2. Compile uberjar (clojure -T:build / lein)        │
-│  3. Download JDK from Adoptium (cached locally)      │
-│  4. Detect modules with jdeps                        │
-│  5. Create minimal runtime with jlink (~30-50 MB)    │
-│  6. Pack runtime + JAR into self-contained binary    │
-└──────────────────────────────────────────────────────┘
-```
+1. Detect build system (deps.edn or project.clj)
+2. Compile uberjar (clojure -T:build / lein)
+3. Download JDK from Adoptium (cached locally)
+4. Detect modules with jdeps
+5. Create minimal runtime with jlink (~30-50 MB)
+6. Pack runtime + JAR into self-contained binary
 
 The generated binary is a shell stub + tar.gz payload. On first execution it extracts to `~/.clj-pack/cache/` (cached by content hash), then runs `java -jar` from the minimal runtime. Subsequent runs skip extraction entirely.
 
@@ -118,28 +114,6 @@ cargo run -- build --input ./example --output ./dist/app
 
 # Run the generated binary
 ./dist/app
-```
-
-### Project structure
-
-```
-src/
-├── main.rs        # Entry point, orchestration
-├── cli.rs         # CLI definition (clap)
-├── config.rs      # BuildConfig, Target, BuildSystem
-├── detect.rs      # Build system detection
-├── build.rs       # Uberjar compilation
-├── jlink.rs       # jdeps + jlink (minimal runtime)
-├── error.rs       # Error types
-├── jvm/
-│   ├── mod.rs       # JDK download orchestration
-│   ├── adoptium.rs  # Adoptium API client
-│   ├── download.rs  # Download + SHA256 verification
-│   └── cache.rs     # Local JDK cache
-└── pack/
-    ├── mod.rs       # Binary creation
-    ├── stub.rs      # Shell launcher generation
-    └── archive.rs   # tar.gz payload creation
 ```
 
 ### Ideas for contribution
