@@ -1,6 +1,8 @@
 # jbundle
 
-Package JVM applications (Clojure, Java) into self-contained binaries. No JVM installation required to run the output.
+Package JVM applications (Clojure, Java, Kotlin, Scala, Groovy — any JVM language) into self-contained binaries. No JVM installation required to run the output.
+
+> **Note:** Previously known as `clj-pack`. Renamed to `jbundle` to reflect support for all JVM languages, not just Clojure.
 
 ```
 project/jar → jbundle → single binary (runs anywhere)
