@@ -16,6 +16,12 @@ pub struct ProjectConfig {
     pub appcds: Option<bool>,
     pub crac: Option<bool>,
     pub compact_banner: Option<bool>,
+    /// Gradle subproject to build (for multi-project builds)
+    pub gradle_project: Option<String>,
+    /// Manual module override (bypasses jdeps detection)
+    pub modules: Option<Vec<String>>,
+    /// Path to existing jlink runtime to reuse
+    pub jlink_runtime: Option<String>,
 }
 
 pub fn load_project_config(dir: &Path) -> Result<Option<ProjectConfig>> {
@@ -51,6 +57,9 @@ profile = "cli"
 appcds = false
 crac = true
 compact_banner = false
+gradle_project = "jabkit"
+modules = ["java.base", "java.sql"]
+jlink_runtime = "./build/jlink"
 "#,
         )
         .unwrap();
@@ -67,6 +76,12 @@ compact_banner = false
         assert_eq!(config.appcds, Some(false));
         assert_eq!(config.crac, Some(true));
         assert_eq!(config.compact_banner, Some(false));
+        assert_eq!(config.gradle_project.as_deref(), Some("jabkit"));
+        assert_eq!(
+            config.modules,
+            Some(vec!["java.base".to_string(), "java.sql".to_string()])
+        );
+        assert_eq!(config.jlink_runtime.as_deref(), Some("./build/jlink"));
     }
 
     #[test]

@@ -11,9 +11,15 @@ java_version = 21
 target = "linux-x64"
 jvm_args = ["-Xmx512m", "-XX:+UseZGC"]
 profile = "cli"
+shrink = true
 appcds = true
 crac = false
 compact_banner = false
+
+# Gradle multi-project options
+gradle_project = "app"
+modules = ["java.base", "java.sql"]
+jlink_runtime = "./build/jlink"
 ```
 
 All fields are optional.
@@ -26,9 +32,13 @@ All fields are optional.
 | `target` | string | current platform | Target platform (`linux-x64`, `macos-aarch64`, etc.) |
 | `jvm_args` | array | `[]` | JVM arguments passed at runtime |
 | `profile` | string | `"server"` | JVM profile (`"cli"` or `"server"`) |
+| `shrink` | boolean | `false` | Shrink uberjar by removing non-essential files |
 | `appcds` | boolean | `true` | Enable AppCDS for faster startup |
 | `crac` | boolean | `false` | Enable CRaC checkpoint (Linux only) |
 | `compact_banner` | boolean | `false` | Use a compact banner in the wrapper |
+| `gradle_project` | string | — | Gradle subproject to build (for multi-project) |
+| `modules` | array | — | Manual module list (bypasses jdeps detection) |
+| `jlink_runtime` | string | — | Path to existing jlink runtime to reuse |
 
 ## Precedence
 
@@ -53,14 +63,16 @@ jvm_args = ["-Xmx256m"]
 
 ### Microservice
 
-Standard server configuration:
+Standard server configuration with custom GC:
 
 ```toml
 # jbundle.toml
 java_version = 21
-profile = "server"
+profile = "server"  # Important: use "server" when specifying custom GC
 jvm_args = ["-Xmx1g", "-XX:+UseZGC"]
 ```
+
+> **Note:** When using a custom garbage collector like ZGC, always use `profile = "server"`. The `"cli"` profile includes `-XX:+UseSerialGC`, and the JVM cannot use multiple GCs simultaneously. jbundle will detect this conflict and fail with a helpful error message.
 
 ### Cross-Platform Build
 
@@ -81,6 +93,36 @@ With CRaC for instant startup:
 java_version = 21
 profile = "cli"
 crac = true
+```
+
+### Gradle Multi-Project
+
+For complex projects like JabRef:
+
+```toml
+# jbundle.toml
+gradle_project = "jabkit"
+java_version = 21
+profile = "cli"
+jvm_args = ["-Xmx1g"]
+```
+
+### With Custom Modules
+
+When jdeps detection is insufficient:
+
+```toml
+# jbundle.toml
+modules = ["java.base", "java.sql", "java.desktop", "jdk.incubator.vector"]
+```
+
+### Reusing Existing Runtime
+
+Skip jlink if you have a pre-built runtime:
+
+```toml
+# jbundle.toml
+jlink_runtime = "./build/jlink"
 ```
 
 ## Environment Variables

@@ -25,9 +25,15 @@ jbundle build [OPTIONS] --input <PATH> --output <PATH>
 | `--target <TARGET>` | current | Target platform (see [Platforms](platforms.md)) |
 | `--profile <PROFILE>` | `server` | JVM profile (`cli` or `server`) |
 | `--jvm-args <ARGS>` | — | JVM arguments (e.g., `-Xmx512m`) |
+| `--shrink [true\|false]` | `false` | Shrink uberjar by removing non-essential files |
 | `--no-appcds` | — | Disable AppCDS generation |
 | `--crac` | — | Enable CRaC checkpoint (Linux only) |
 | `--compact-banner` | — | Use a compact banner in the wrapper |
+| `--gradle-project <NAME>` | — | Gradle subproject to build (multi-project) |
+| `--all` | — | Build all application subprojects (Gradle) |
+| `--modules <LIST>` | — | Manual module list, comma-separated |
+| `--jlink-runtime <PATH>` | — | Path to existing jlink runtime to reuse (must contain `bin/java`) |
+| `-v, --verbose` | — | Enable verbose output |
 
 ### Examples
 
@@ -44,14 +50,71 @@ jbundle build --input . --output ./app --profile cli
 # Cross-compile for Linux
 jbundle build --input . --output ./app --target linux-x64
 
-# Multiple JVM arguments
-jbundle build --input . --output ./app --jvm-args "-Xmx512m -XX:+UseZGC"
+# Multiple JVM arguments (use server profile with custom GC)
+jbundle build --input . --output ./app --profile server --jvm-args "-Xmx512m -XX:+UseZGC"
+
+# Shrink the uberjar (remove non-essential files)
+jbundle build --input . --output ./app --shrink
+
+# Explicitly disable shrinking
+jbundle build --input . --output ./app --shrink false
 
 # From pre-built JAR
 jbundle build --input ./target/app.jar --output ./dist/app
 
 # With CRaC (Linux)
 jbundle build --input . --output ./app --crac
+
+# Gradle multi-project: specific subproject
+jbundle build --input . --output ./dist/app --gradle-project app
+
+# Gradle multi-project: build all
+jbundle build --input . --output ./dist --all
+
+# Manual module specification
+jbundle build --input . --output ./app --modules java.base,java.sql,java.logging
+
+# Reuse existing jlink runtime
+jbundle build --input . --output ./app --jlink-runtime ./build/jlink
+```
+
+## jbundle analyze
+
+Analyze a JAR or project and report size breakdown, top dependencies, and potential issues.
+
+```bash
+jbundle analyze [OPTIONS]
+```
+
+### Options
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--input <PATH>` | `.` | Project directory or pre-built JAR file |
+
+When given a project directory, jbundle detects the build system, builds the uberjar, then analyzes it. When given a JAR file directly, it skips the build step.
+
+### Output
+
+The report includes:
+
+* **Category breakdown** — Classes, Resources, Native libs, Metadata, Clojure/Java sources with size and file count
+* **Top packages by size** — Grouped by first 3 path segments (e.g., `org.apache.commons`)
+* **Clojure namespaces** — Detected from `__init.class` entries
+* **Shrink estimate** — How much `--shrink` would save
+* **Potential issues** — Duplicate classes, large resources (> 1 MB)
+
+### Examples
+
+```bash
+# Analyze current project
+jbundle analyze
+
+# Analyze a specific project
+jbundle analyze --input ./my-app
+
+# Analyze a pre-built JAR
+jbundle analyze --input ./target/app-standalone.jar
 ```
 
 ## jbundle info
