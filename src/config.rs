@@ -174,6 +174,7 @@ pub struct BuildConfig {
     pub appcds: bool,
     pub crac: bool,
     pub compact_banner: bool,
+    pub one_time_banner: bool,
     /// Gradle subproject to build (for multi-project builds)
     pub gradle_project: Option<String>,
     /// Build all application subprojects (Gradle multi-project)

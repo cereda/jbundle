@@ -66,6 +66,7 @@ async fn main() -> Result<()> {
             jlink_runtime,
             verbose: _,
             compact_banner,
+            one_time_banner,
         } => {
             let input_path =
                 std::fs::canonicalize(&input).unwrap_or_else(|_| PathBuf::from(&input));
@@ -141,6 +142,12 @@ async fn main() -> Result<()> {
                     .and_then(|c| c.compact_banner)
                     .unwrap_or(false);
 
+            let one_time_banner = one_time_banner
+                || project_config
+                    .as_ref()
+                    .and_then(|c| c.one_time_banner)
+                    .unwrap_or(false);
+
             // Gradle subproject selection (CLI > config file)
             let gradle_project = gradle_project.or_else(|| {
                 project_config
@@ -186,6 +193,7 @@ async fn main() -> Result<()> {
                 appcds,
                 crac,
                 compact_banner,
+                one_time_banner,
                 gradle_project,
                 build_all: all,
                 modules_override,
@@ -523,6 +531,8 @@ async fn run_build(config: BuildConfig) -> Result<()> {
 
     let compact_banner = config.compact_banner;
 
+    let one_time_banner = config.one_time_banner;
+
     // Step: Pack binary
     let step = pipeline.start_step("Packing binary");
     pack::create_binary(&pack::PackOptions {
@@ -535,6 +545,7 @@ async fn run_build(config: BuildConfig) -> Result<()> {
         appcds: config.appcds,
         java_version,
         compact_banner,
+        one_time_banner,
     })?;
     let size = std::fs::metadata(&config.output)?.len();
     Pipeline::finish_step(
