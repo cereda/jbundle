@@ -28,6 +28,8 @@ use error::PackError;
 use gradle::Subproject;
 use progress::Pipeline;
 
+use crate::cli::BannerSize;
+
 #[tokio::main]
 async fn main() -> Result<()> {
     let cli = Cli::parse();
@@ -66,6 +68,7 @@ async fn main() -> Result<()> {
             jlink_runtime,
             verbose: _,
             compact_banner,
+            banner_size,
         } => {
             let input_path =
                 std::fs::canonicalize(&input).unwrap_or_else(|_| PathBuf::from(&input));
@@ -141,6 +144,18 @@ async fn main() -> Result<()> {
                     .and_then(|c| c.compact_banner)
                     .unwrap_or(false);
 
+            let banner_size = if !compact_banner {
+                match banner_size {
+                    Some(bs) => bs,
+                    None => project_config
+                        .as_ref()
+                        .and_then(|c| c.banner_size)
+                        .unwrap_or(BannerSize::Normal),
+                }
+            } else {
+                BannerSize::Compact
+            };
+
             // Gradle subproject selection (CLI > config file)
             let gradle_project = gradle_project.or_else(|| {
                 project_config
@@ -185,7 +200,8 @@ async fn main() -> Result<()> {
                 profile: jvm_profile,
                 appcds,
                 crac,
-                compact_banner,
+                //compact_banner,
+                banner_size,
                 gradle_project,
                 build_all: all,
                 modules_override,
@@ -521,7 +537,9 @@ async fn run_build(config: BuildConfig) -> Result<()> {
         None
     };
 
-    let compact_banner = config.compact_banner;
+    //let compact_banner = config.compact_banner;
+
+    let banner_size = config.banner_size;
 
     // Step: Pack binary
     let step = pipeline.start_step("Packing binary");
@@ -534,7 +552,8 @@ async fn run_build(config: BuildConfig) -> Result<()> {
         profile: &config.profile,
         appcds: config.appcds,
         java_version,
-        compact_banner,
+        //compact_banner,
+        banner_size,
     })?;
     let size = std::fs::metadata(&config.output)?.len();
     Pipeline::finish_step(

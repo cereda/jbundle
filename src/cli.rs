@@ -13,6 +13,13 @@ pub struct Cli {
     pub command: Command,
 }
 
+#[derive(clap::ValueEnum, serde::Deserialize, Copy, Clone, Debug, PartialEq)]
+pub enum BannerSize {
+    None,
+    Compact,
+    Normal,
+}
+
 #[derive(Subcommand)]
 pub enum Command {
     /// Build a self-contained binary from a JVM project or JAR
@@ -73,9 +80,13 @@ pub enum Command {
         #[arg(short, long)]
         verbose: bool,
 
-        /// Use a compact banner in the wrapper
-        #[arg(long)]
+        /// Use a compact banner in the wrapper (deprecated: use `--banner-size` instead)
+        #[arg(long, group = "legacy", conflicts_with = "banner_size")]
         compact_banner: bool,
+
+        /// Set the banner size
+        #[arg(long, value_enum)]
+        banner_size: Option<BannerSize>,
     },
 
     /// Analyze a JAR or project and report size breakdown

@@ -14,7 +14,8 @@ profile = "cli"
 shrink = true
 appcds = true
 crac = false
-compact_banner = false
+compact_banner = false # deprecated, use banner_size instead
+banner_size = "Normal"
 
 # Gradle multi-project options
 gradle_project = "app"
@@ -26,19 +27,28 @@ All fields are optional.
 
 ## Options
 
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `java_version` | integer | `21` | JDK version to bundle |
-| `target` | string | current platform | Target platform (`linux-x64`, `macos-aarch64`, etc.) |
-| `jvm_args` | array | `[]` | JVM arguments passed at runtime |
-| `profile` | string | `"server"` | JVM profile (`"cli"` or `"server"`) |
-| `shrink` | boolean | `false` | Shrink uberjar by removing non-essential files |
-| `appcds` | boolean | `true` | Enable AppCDS for faster startup |
-| `crac` | boolean | `false` | Enable CRaC checkpoint (Linux only) |
-| `compact_banner` | boolean | `false` | Use a compact banner in the wrapper |
-| `gradle_project` | string | — | Gradle subproject to build (for multi-project) |
-| `modules` | array | — | Manual module list (bypasses jdeps detection) |
-| `jlink_runtime` | string | — | Path to existing jlink runtime to reuse |
+| Field            | Type    | Default          | Description                                          |
+|------------------|---------|------------------|------------------------------------------------------|
+| `java_version`   | integer | `21`             | JDK version to bundle                                |
+| `target`         | string  | current platform | Target platform (`linux-x64`, `macos-aarch64`, etc.) |
+| `jvm_args`       | array   | `[]`             | JVM arguments passed at runtime                      |
+| `profile`        | string  | `"server"`       | JVM profile (`"cli"` or `"server"`)                  |
+| `shrink`         | boolean | `false`          | Shrink uberjar by removing non-essential files       |
+| `appcds`         | boolean | `true`           | Enable AppCDS for faster startup                     |
+| `crac`           | boolean | `false`          | Enable CRaC checkpoint (Linux only)                  |
+| `compact_banner` | boolean | `false`          | Use a compact banner in the wrapper *(deprecated)*   |
+| `banner_size`    | enum    | `Normal`         | Set the banner size in the wrapper                   |
+| `gradle_project` | string  | —                | Gradle subproject to build (for multi-project)       |
+| `modules`        | array   | —                | Manual module list (bypasses jdeps detection)        |
+| `jlink_runtime`  | string  | —                | Path to existing jlink runtime to reuse              |
+
+The possible values for the banner size (in both command line and configuration file) are:
+
+| Value     | Result                     |
+|-----------|----------------------------|
+| `None`    | No banner is displayed     |
+| `Compact` | A compact, one-line banner |
+| `Normal`  | ASCII art banner           |
 
 ## Precedence
 
